@@ -4,6 +4,7 @@ const cc = @import("compile_commands.zig");
 pub const createStep = cc.createStep;
 pub const extractIncludeDirsFromCompileStep = cc.extractIncludeDirsFromCompileStep;
 pub const extractIncludeDirFromInstallFileStep = cc.extractIncludeDirFromInstallFileStep;
+pub const replaceDriver = cc.replaceDriver;
 
 pub fn build(b: *std.Build) void {
     _ = b;
