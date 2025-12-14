@@ -2,6 +2,7 @@ const std = @import("std");
 
 // here's the static memory!!!!
 var compile_steps: ?[]*std.Build.Step.Compile = null;
+var cc_options: ?CompileCommandOptions = null;
 
 const CSourceFiles = std.Build.Module.CSourceFiles;
 
@@ -18,10 +19,15 @@ const CompileCommandEntry = struct {
     output: []const u8,
 };
 
-pub fn createStep(b: *std.Build, name: []const u8, targets: []*std.Build.Step.Compile) *std.Build.Step {
+const CompileCommandOptions = struct {
+    driver: ?[]const u8,
+};
+
+pub fn createStep(b: *std.Build, name: []const u8, targets: []*std.Build.Step.Compile, options: CompileCommandOptions) *std.Build.Step {
     const step = b.allocator.create(std.Build.Step) catch @panic("Allocation failure, probably OOM");
 
     compile_steps = targets;
+    cc_options = options;
 
     step.* = std.Build.Step.init(.{
         .id = .custom,
@@ -268,7 +274,7 @@ fn makeCdb(step: *std.Build.Step, make_options: std.Build.Step.MakeOptions) anye
 
             var arguments = std.ArrayList([]const u8){};
             // pretend this is clang compiling
-            arguments.appendSlice(allocator, &.{ "clang", c_file, "-o", output_str }) catch @panic("OOM");
+            arguments.appendSlice(allocator, &.{ cc_options.?.driver orelse "clang", c_file, "-o", output_str }) catch @panic("OOM");
             arguments.appendSlice(allocator, flags) catch @panic("OOM");
 
             // add host native include dirs and libs
