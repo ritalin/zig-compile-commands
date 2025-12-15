@@ -2,7 +2,7 @@ const std = @import("std");
 
 // here's the static memory!!!!
 var compile_steps: ?[]*std.Build.Step.Compile = null;
-pub var options: CompileCommandOptions = .{};
+var cc_options: CompileCommandOptions = .{};
 
 const CSourceFiles = std.Build.Module.CSourceFiles;
 
@@ -275,7 +275,7 @@ fn makeCdb(step: *std.Build.Step, make_options: std.Build.Step.MakeOptions) anye
 
             var arguments = std.ArrayList([]const u8){};
             // pretend this is clang compiling
-            arguments.appendSlice(allocator, &.{ options.driver orelse "clang", c_file, "-o", output_str }) catch @panic("OOM");
+            arguments.appendSlice(allocator, &.{ cc_options.driver orelse "clang", c_file, "-o", output_str }) catch @panic("OOM");
             arguments.appendSlice(allocator, flags) catch @panic("OOM");
 
             // add host native include dirs and libs
@@ -334,7 +334,10 @@ fn includeFlag(ally: std.mem.Allocator, path: []const u8) []const u8 {
     return std.fmt.allocPrint(ally, "-I{s}", .{path}) catch @panic("OOM");
 }
 
-// Replace the command driver path.
-pub fn replaceDriver(driver: []const u8) void {
-    options.driver = driver;
+/// Returns a pointer to the options used for compile_commands.json generation.
+///
+/// The returned options are intended to be mutated in order to customize
+/// how the compilation commands are generated.
+pub fn options() *CompileCommandOptions {
+    return &cc_options;
 }
